@@ -1,0 +1,438 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<!--
+  Template path : Fleet/MultiInvoiceRept.html
+  Author :
+  Purpose :
+  Referred Program :
+  Folder No. : 17
+  Page No. :122
+  -->
+
+<meta http-equiv="Pragma" content="no-cache">
+<title>|^Multiple Invoice^|</title>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html;"  charset="UTF-8">
+<LINK rel="stylesheet" type="text/css" href="/EngDev/GenScripts94/Def.css">
+<script language="JavaScript" src="/EngDev/GenScripts94/calendar.js"></script>
+<script language="JavaScript" src="/EngDev/GenScripts94/settings.js"></script>	
+<script language="javascript" src="/EngDev/GenScripts94/GenFunctions.js"></script>
+<script language="JavaScript" src="/EngDev/GenScripts94/DateFunctions.js"></script>
+<script language="javascript">
+<!-- Confirmation For Clear Button -->
+var Folder_No =17;
+var Page_No =122;
+function check_form()
+{ 
+with(document.forms[0])
+	{		
+		if(AllBranches.value=='N' && trim(Branchcode.value)=='')
+		{
+		 alert('|^Please select Branch^|');
+		 AllBranches.value='N';
+		 Branchcode.focus();
+		 return false;
+		}  
+		
+		if(trim(InvoiceDateFrom.value)=="" || InvoiceDateFrom.value=="00/00/0000")
+		{
+		  alert('|^Invalid From Date^|');
+			InvoiceDateFrom.focus();
+			return false;
+		}
+
+		if(trim(InvoiceDateFrom.value)!="")
+		{
+		 if(!(isDate(InvoiceDateFrom)))
+			{
+				alert('|^Invalid From Date^|');
+  			InvoiceDateFrom.focus();
+  			return false;
+			}
+		}
+
+		if(trim(InvoiceDateTo.value)!="")
+		{
+		 if(!(isDate(InvoiceDateTo)))
+			{
+				alert('|^Invalid To Date^|');
+  			InvoiceDateTo.focus();
+  			return false;
+			}
+		}
+		
+		if(trim(InvoiceDateTo.value)=="" || InvoiceDateTo.value=="00/00/0000")
+		{
+		  alert('|^Invalid To Date^|');
+			InvoiceDateTo.focus();
+			return false;
+		}
+		
+		//if(this.value!=''){isDate(this);}
+		
+		if(compareDatesByValue(InvoiceDateFrom.value,InvoiceDateTo.value))
+		{
+		 alert('|^Invoice From date should be less than Invoice To Date^|')
+		 InvoiceDateFrom.focus();
+		 return false;
+		}
+    Proceed_BT.disabled=true;		
+    MessageWindow();    
+    submit();
+  }
+}
+function MessageWindow()
+{
+	 document.forms[0].ProcessWindowNo.value=1;
+	 Process=open("/EngDev/Process.html", "PleaseWait", "left=200,top=250,width=267,height=103");
+}
+
+function MessageWindowClose()
+{
+if(document.forms[0].ProcessWindowNo.value==1)
+{
+	 Process.close();
+}
+return true;
+}
+
+
+function disable1()
+{ 
+  with(document.forms[0])
+	 { 
+	  AllCompany.value='N';		
+		AllBranches.value='N';
+		InvoiceType.value='A';
+		IncludeCancelInv.value='N';
+		SelectInvoices.value='A';
+		
+	 }
+}
+
+function disable()
+{  
+  with(document.forms[0])
+   {  
+    if(AllCompany.value=='Y')
+	    {  
+		   Companycode.disabled=true;
+		    Companycode.value="";
+			
+      }
+			else
+		  {
+		   Companycode.disabled=false;
+			 
+		 }
+		 if(AllBranches.value=='Y')
+	    {  
+		   Branchcode.disabled=true;
+			 BranchImg.disabled=true;
+			  Branchcode.value="";
+			 BranchName.value="";
+      }
+			else
+		  {
+		   Branchcode.disabled=false;
+			 BranchImg.disabled=false;
+		 }
+  }
+}
+
+function CheckBranch()
+{
+   with(document.forms[0])
+    {
+	/*
+		  var ExtraCode;		  
+      var loadAcc;		  
+			var urlOc = '/Magic94Scripts/mgrqispi94.dll?appname=RentProWeb&prgName=[X]CheckBranchExists&Arguments=-A'+Branchcode.value;
+      var xmltemp = new ActiveXObject("Msxml2.XMLHTTP.3.0");
+      xmltemp.open("GET",urlOc, false);			 
+      xmltemp.send();			
+      ExtraCode = xmltemp.responseXML;
+	  */
+	  var urlOc = '[X]CheckBranchExists&Arguments=-A'+Branchcode.value;
+var ExtraCode = loadDefXml(urlOc);
+      resultNode = ExtraCode.getElementsByTagName('Root').item(0);      
+
+			if(resultNode.getAttribute('BranchExists') == 'N')
+			{
+			  alert('|^Invalid Branch Code^|');
+			 	Branchcode.value="";
+				BranchName.value="";
+				Branchcode.focus();		
+			 	return false;
+			}		
+					
+			else if(resultNode.getAttribute('BranchExists') == 'Y')
+			{		 
+			 	BranchName.value=resultNode.getAttribute('BranchName');			
+			}		
+    }
+}
+
+
+
+function ClearGrName()
+{
+
+}
+
+function DebitorCodeonchange(){
+		with(document.forms[0]){
+			var urlOc = "/Magic94Scripts/mgrqispi94.dll?appname=RentProWeb&prgName=[X]DebitorValues&ARGUMENTS=-A"+DebitorCodeSearch.value;
+					var xmlDeb = new ActiveXObject("Msxml2.XMLHTTP.3.0");
+					xmlDeb.open("GET",urlOc, false);
+					xmlDeb.send();
+					var xmlDebitor= xmlDeb.responseXML;				
+					var RootObj=xmlDebitor.getElementsByTagName("Result").item(0);	
+
+					if(RootObj.getElementsByTagName("Valid").item(0).text==1){							
+					DebitorSearch.value=RootObj.getElementsByTagName("DebitorName").item(0).text;
+					
+					}
+					else{
+					alert("|^Invalid Debitor Code^|");		 
+					DebitorCodeSearch.value="";
+					DebitorSearch.value="";
+					}
+			
+		}
+	}
+
+	function AgreementNoonchange()
+		 {
+      with(document.forms[0])
+        {   
+          var Agr,AgrExistsX,DebitorAgrX;		  
+          var loadAcc;		  
+          var urlOc = '/Magic94Scripts/mgrqispi94.dll?appname=RentProWeb&prgName=[X]ValidateAgreementNo&Arguments=-A'+AgreementNo.value+',-A,-A'+DebitorCodeSearch.value+',-A1';
+          var xmltemp = new ActiveXObject("Msxml2.XMLHTTP.3.0");
+          xmltemp.open("GET",urlOc, false);			 
+          xmltemp.send();			
+          Agr = xmltemp.responseXML;
+          resultNode = Agr.getElementsByTagName('Root').item(0);
+		 // alert(Agr.xml)
+            if(resultNode)
+              {			  
+             					 AgrExistsX = resultNode.getAttribute('CloseAgrExists');		
+                                 DebitorAgrX= resultNode.getAttribute('AgrExistsForDebitor');									 
+										
+              }					
+        		if(AgrExistsX == 'N')
+          		{
+                  		    alert('|^Invalid Agreement No^|');
+                  			AgreementNo.focus();
+                  			AgreementNo.value='';
+												return false;
+          		}								
+			else if(AgrExistsX =='Y')
+							{
+							  if(DebitorAgrX == 'N')
+								{
+							alert('|^Agreement No Does Not Belong To Selected Debitor^|');
+                  			AgreementNo.focus();
+                  			AgreementNo.value='';
+							return false;								
+								}										  
+							}
+		}
+							
+																				        
+      }
+    function Init(){
+with(document.forms[0]){
+//alert(companyFormate.value)
+if(companyFormate.value==100 || companyFormate.value==101 || companyFormate.value==8 || companyFormate.value==116  || companyFormate.value==94 || companyFormate.value==148 || companyFormate.value==161)
+{
+//alert(1)
+batch.style.display="";
+}
+
+}
+}
+function openPrintjob(){
+	with(document.forms[0]){
+		NewWin('/Magic94Scripts/mgrqispi94.dll?appname=RentProWeb&prgName=PrintJobQA&Arguments=-A,-A,-A7','DebitorFindQA','DebitorFindQA','left=160,top=70,height=525,WIDTH=865,scrollbars=1,resizable=1');
+	}
+}
+
+</script>
+</head>
+<body onload="disable1();Init();fullscreen();" onUnload="javascript:MessageWindowClose()">
+<form action="/Magic94Scripts/mgrqispi94.dll" method="post" name="myform">
+
+	<input type=hidden name="AppName" value="RentProWeb">
+	<input type=hidden name="PrgName" value="MultipleInvoiceRptProceed">
+	<input type=hidden name="Arguments" value="AllCompany,Companycode,AllBranches,Branchcode,InvoiceDateFrom,InvoiceDateTo,IncludeCancelInv,SelectInvoices,InvoiceType,Copy,CalledFrom,DebitorCodeSearch,AgreementNo">
+	<INPUT type="hidden" name="CalledFrom" value="1" >
+	<INPUT type="hidden" name="companyFormate" value="<!$MG_companyFormate>" >
+	<INPUT type="hidden" name="ProcessWindowNo" value="">
+	
+<TABLE border=0 cellPadding=0 cellSpacing=0 width="70%" align="left">
+<tr>
+    <td valign="top" class="LeftCorner">&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td width="100%"valign="middle" class="MainHeader">|^Print Multiple Invoice^|</td>
+    <td valign="middle" class="MainHeader">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>								
+</tr>	
+<tr>
+    <td valign="top" class="LeftBorder"><!--DWLayoutEmptyCell-->&nbsp;</td>				
+    <td  width="100%">
+        <!-- Every thing goes in this block -->
+        <table class="Tablebox"  width="100%" border=0 cellPadding=0 cellSpacing=0><!-- Main Table -->
+       
+        <tr>
+            <td>
+            <table border="0" width="100%"  class="box" id="box" border=1 cellPadding=0 cellSpacing=0>
+						<col width = "20%"/>
+						<col width = "15%"/>
+						<col width = "20%"/>
+						<col width = "30%"/>
+           
+            <tr>
+                <td>|^All Companies^|</td>
+                <td colspan="3">
+									<select name="AllCompany"  value="" class="textInputField_CmbLr"  onchange="disable();" >
+                <option value="Y">|^Yes^|</option>
+                <option value="N">|^No^|</option> 				
+                </select>
+        				</td>		
+            </tr>
+						<tr>
+						 <td >|^Company^| </td>
+					   <td colspan="3">
+ 											<select name="Companycode" class="textInputField_CmbLr" >
+											  	<!$MGIF_RangeCompanyAll>
+														<option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+											  	<!$MGENDIF>
+													<!$MGREPEAT>
+																			<option value="<!$MG_CompanyCode>" <!$MGIF_selectedCompany> selected <!$MGENDIF> ><!$MG_CompanyValue></option>
+													<!$MGENDREPEAT>
+											</select>
+            </tr>
+						
+						  <tr>
+                <td>|^All Branches^|</td>
+                <td colspan="3">
+									<select name="AllBranches"  class="textInputField_CmbLr"  onchange="disable();" >
+                <option value="Y">|^Yes^|</option>
+                <option value="N">|^No^|</option> 				
+                </select>
+        				</td>		
+            </tr>
+						<tr>
+						 <td >|^Branch^| </td>
+					   <td colspan="3">  <input type="text" class="textInputFieldLr" align="left" tabindex="-1" name="Branchcode" value="<!$MG_BranchCode>" size=10 maxlength="10" onchange="CheckBranch()"   onblur="ClearGrName()">
+					   <img src="/EngDev/Images94/QuickAccess/qa_search_button.jpg" width="20" height="20" name="BranchImg" align="absmiddle" onclick="NewWin('/Magic94Scripts/mgrqispi94.dll?appname=RentProWeb&prgName=BranchesList&Arguments=-A'+document.forms[0].Branchcode.value,'BranchPick','QApicklist','left=120,top=40,HEIGHT=400,WIDTH=600,scrollbars=1,status=0,resizable=1');">
+					   &nbsp;&nbsp;<input type="text" class="readOnly_textInputFieldLG" name="BranchName" value="<!$MG_BranchName>" readonly size="20" style="width:200px"></td>
+            </tr>
+			<tr <!$MGIF_HertzDubai> <!$MGELSE>style="display:none" <!$MGENDIF>>
+			 <td  nowrap>|^Debitor^|</td>
+          <td nowrap>
+									<input type="text" id="DebitorCodeSearch" name="DebitorCodeSearch" value="" class="textInputFieldLr" size=8  onchange="DebitorCodeonchange();" onkeypress="return CheckIntegerKey(event);">  
+									<img src="/EngDev/Images94/QuickAccess/qa_search_button.jpg" width="20" height="20" align="absmiddle" onclick="NewWin('/Magic94Scripts/mgrqispi94.dll?appname=RentProWeb&prgName=DebitorsQuickAccess&Arguments=-A2,-A,-A,-A,-A'+document.forms[0].DebitorCodeSearch.value,'Debitor','DebitorFind','left=160,top=70,height=525,WIDTH=865,scrollbars=1,resizable=1');" >
+									&nbsp;&nbsp;<input type="text" name="DebitorSearch" value="" readonly class="readOnly_textInputFieldLG" size=20 style="width:200px">
+          	
+          </td>
+			</tr>
+						 <tr>
+                <td>|^Invoice Type^|</td>
+                <td colspan="3">
+									<select name="InvoiceType"  value="" class="textInputField_CmbLr"  onchange="disable();" >
+                <option value="D">|^Driver^|</option>
+                <option value="C">|^Customer^|</option> 	
+							  <option value="P">|^Prebilling^|</option> 
+								<option value="G">|^G_Damage^|</option> 
+								<option value="T">|^Traffic^|</option> 
+								<option value="S">|^Salik^|</option> 
+								<option value="L">|^Lease^|</option> 
+								<!$MGIF_HertzDubaiThrfty>
+								<option value="J">|^Adjustment^|</option>
+								<option value="U">|^Fuel^|</option>
+								<!$MGENDIF>
+								<!$MGIF_CBelhasa>
+								<option value="E">|^Limousine^|</option> 
+								<option value="N">|^Adjustment^|</option> <!$MGENDIF>
+								<option value="A">|^All^|</option> 
+                </select>
+        				</td>		
+            </tr>
+						<tr>
+						     <td nowrap>|^Invoice Date From^|</td> 
+								 <td nowrap>	<input class="textInputFieldLr" type="text" name="InvoiceDateFrom" value="<!$MG_InvoiceFromDate>" onchange="if(this.value!=''){isDate(this);}" size=8 maxlength="10">
+									<a  name="C2" href="javascript:var cal1 = new calendar(document.forms[0].InvoiceDateFrom);cal1.past_future='';cal1.popup();"   ><img src="/EngDev/Images94/QuickAccess/qa_calendar_button.jpg" name="fromimg" align="absmiddle"  border=0></a></td>
+									<td nowrap>|^Invoice Date To^|</td>
+								 <td nowrap><input class="textInputFieldLr" type="text" name="InvoiceDateTo" value="<!$MG_InvoiceToDate>" onchange="if(this.value!=''){isDate(this);}" size=8 maxlength="10">
+									<a  name="C1" href="javascript:var cal1 = new calendar(document.forms[0].InvoiceDateTo);cal1.past_future='';cal1.popup();"   ><img src="/EngDev/Images94/QuickAccess/qa_calendar_button.jpg" name="fromimg" align="absmiddle"  border=0></a></td>
+						
+            </tr>
+						 <tr>
+                <td>|^Include Cancel Invoice^|</td>
+                <td colspan="3">
+									<select name="IncludeCancelInv"  value="" class="textInputField_CmbLr"  onchange="disable();" >
+                <option value="Y">|^Yes^|</option>
+                <option value="N">|^No^|</option> 				
+                </select>
+        				</td>		
+            </tr>
+					 	 <tr>
+                <td>|^Select Invoices^|</td>
+                <td <!$MGIF_HertzDubai1> <!$MGELSE>colspan="3" <!$MGENDIF>>
+									<select name="SelectInvoices"  value="" class="textInputField_CmbLr"  onchange="disable();" >
+                <option value="N">|^Not Printed^|</option>
+                <option value="P">|^Printed^|</option> 	
+								<option value="A">|^All^|</option> 			
+                </select>
+        				</td>	
+ <td  nowrap  <!$MGIF_HertzDubai1> <!$MGELSE>style="display:none" <!$MGENDIF>>|^Agreement No^|</td>
+          <td  nowrap <!$MGIF_HertzDubai1> <!$MGELSE>style="display:none" <!$MGENDIF> >
+  								<Input type="text" id="AgreementNo" name="AgreementNo" value="" class="textInputFieldLr" size="8"  style="width:90px"  onkeypress="return CheckIntegerKey(event);" onchange="AgreementNoonchange();">
+           <img src="/EngDev/Images94/QuickAccess/qa_search_button.jpg" width="20" height="20" align="absmiddle"  onclick="NewWin('/Magic94Scripts/mgrqispi94.dll?appname=RentProWeb&prgName=Agreement_List&Arguments=-A'+AgreementNo.value+',-A,-A4,-A4,-A,-A,-A,-A,-A,-A,-A'+DebitorCodeSearch.value+',-A1','RentalCompAuthWOR','RentalCompAuthWOR','left=160,top=70,height=525,WIDTH=865,scrollbars=1,resizable=1');">
+          </td>						
+            </tr>
+						 <tr>
+                <td>|^Copy^|</td>
+                <td colspan="3">
+									<select name="Copy"  value="" class="textInputField_CmbLr"  onchange="disable();" >
+                <option value="Y">|^Yes^|</option>
+                <option value="N">|^No^|</option> 				
+                </select>
+        				</td>		
+            </tr>
+           
+            
+          </table>
+        </td>
+        </tr>
+        <tr>
+        <td>
+            <table summary=""  width="100%" border=0 cellPadding=0 cellSpacing=0 class="box">
+            <tr>
+            <td align="right">
+                	<INPUT type="button"  name="batch" id="batch" value="Batch" onclick="javascript:openPrintjob();" class="buttonMdtp3" style="display:none" />
+                <input type="button" class="buttonMdTp3" name="Proceed_BT" value="|^Proceed^|" onclick="check_form()">
+                <INPUT type="reset"  class="buttonMdTp3" name="Clear_BT" value="|^Cancel^|" >
+								<INPUT type="button"  class="buttonMdTp3" name="Close_BT" value="|^Exit^|" onclick="window.close();">
+               
+            </td>
+            </tr>
+            </table>
+        </td>
+        </tr>
+        </table>
+    </td>
+    <td valign="top" class="RightBorder"><!--DWLayoutEmptyCell-->&nbsp;</td>							
+</TR>
+<tr>
+    <td valign="top" class="BottomLeftCorner"></td>
+    <td valign="top" class="BottomBorder"></td>
+    <td valign="top" class="BottomRightCorner"></td>      
+</tr>
+</TABLE>
+
+</form>
+</body>
+</html>
+
